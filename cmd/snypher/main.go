@@ -15,6 +15,14 @@ func main() {
 	var iface string
 	var newWin bool
 
+	listCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List all available network interfaces",
+		Run: func(cmd *cobra.Command, args []string) {
+			listInterfaces()
+		},
+	}
+
 	rootCmd := &cobra.Command{
 		Use:   "snypher",
 		Short: "Snypher - Local network monitor",
@@ -26,8 +34,9 @@ func main() {
 			if iface == "" {
 				fmt.Println("❌ No network interface provided.")
 				fmt.Println("Usage:")
-				fmt.Println("  snypher -i <interface>")
+				fmt.Println("  snypher -r <interface>")
 				fmt.Println("  snypher <interface>")
+				fmt.Println("  snypher list   # show interfaces")
 				listInterfaces()
 				os.Exit(1)
 			}
@@ -51,17 +60,19 @@ func main() {
 			if err := ui.StartUI(packetChan); err != nil {
 				log.Fatalf("ui error: %v", err)
 			}
+
 		},
 	}
 
 	rootCmd.Flags().StringVarP(&iface, "run", "r", "", "network interface to monitor")
 	rootCmd.Flags().BoolVarP(&newWin, "new", "w", false, "open in new terminal window")
 
+	rootCmd.AddCommand(listCmd)
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
 }
 
 func listInterfaces() {

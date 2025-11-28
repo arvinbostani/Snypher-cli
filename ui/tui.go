@@ -39,7 +39,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	out := TitleStyle.Render("🛰️ GoNetMon — Monitor") + "\n\n"
+	out := TitleStyle.Render("🛰️ Snypher") + "\n\n"
 	for i := len(m.packets) - 1; i >= 0; i-- {
 		p := m.packets[i]
 		prefix := OkStyle.Render("[OK]")
