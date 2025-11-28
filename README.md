@@ -1,3 +1,5 @@
+![Snypher Logo](https://cdn.discordapp.com/attachments/1444063587650900038/1444064466495868938/Snypher_logo.png?ex=692b5956&is=692a07d6&hm=34a6af5b02c27f003e7b4f9e57d85daf727bcc654d09696c736d1a3527679037)
+
 ## 👁️ Snypher CLI: Terminal Network Sniffer
 
 Snypher CLI is a powerful, terminal-based network traffic analysis tool built with Go. It allows you to monitor network activity on a specified interface in real-time, displaying packet details and flagging potentially **suspicious traffic**.
