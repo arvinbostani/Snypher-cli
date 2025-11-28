@@ -7,6 +7,8 @@ import (
 	"github.com/google/gopacket/pcap"
 	"log"
 	"os"
+	"runtime"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -41,11 +43,13 @@ func main() {
 				os.Exit(1)
 			}
 
-			if !interfaceExists(iface) {
-				fmt.Printf("❌ Interface '%s' does not exist.\n", iface)
+			resolvedIface, ok := resolveInterface(iface)
+			if !ok {
+				fmt.Printf("❌ Interface '%s' not found.\n", iface)
 				listInterfaces()
 				os.Exit(1)
 			}
+			iface = resolvedIface
 
 			if newWin {
 				if err := ui.OpenInNewTerminal(iface); err != nil {
@@ -83,8 +87,16 @@ func listInterfaces() {
 	}
 
 	fmt.Println("\nAvailable Network Interfaces:")
+
 	for _, iface := range ifaces {
-		fmt.Printf(" - %s\n", iface.Name)
+		name := iface.Name
+		desc := iface.Description
+
+		if runtime.GOOS == "windows" && desc != "" {
+			fmt.Printf(" - %s (%s)\n", name, desc)
+		} else {
+			fmt.Printf(" - %s\n", name)
+		}
 	}
 	fmt.Println()
 }
@@ -100,4 +112,32 @@ func interfaceExists(name string) bool {
 		}
 	}
 	return false
+}
+
+func resolveInterface(input string) (string, bool) {
+	ifaces, err := pcap.FindAllDevs()
+	if err != nil {
+		return "", false
+	}
+
+	for _, i := range ifaces {
+		if i.Description == input {
+			return i.Name, true
+		}
+	}
+
+	inputLower := strings.ToLower(input)
+	for _, i := range ifaces {
+		if strings.Contains(strings.ToLower(i.Description), inputLower) {
+			return i.Name, true
+		}
+	}
+
+	for _, i := range ifaces {
+		if i.Name == input {
+			return i.Name, true
+		}
+	}
+
+	return "", false
 }
