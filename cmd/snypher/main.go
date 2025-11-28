@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/arvinbostani/Snyper.git/sniff"
 	"github.com/arvinbostani/Snyper.git/ui"
+	"github.com/google/gopacket/pcap"
 	"log"
 	"os"
 
@@ -15,7 +16,7 @@ func main() {
 	var newWin bool
 
 	rootCmd := &cobra.Command{
-		Use:   "sniff",
+		Use:   "snypher",
 		Short: "Snypher - Local network monitor",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 && iface == "" {
@@ -23,7 +24,17 @@ func main() {
 			}
 
 			if iface == "" {
-				fmt.Println("Usage: sniff -n <interface> OR sniff <interface>")
+				fmt.Println("❌ No network interface provided.")
+				fmt.Println("Usage:")
+				fmt.Println("  snypher -i <interface>")
+				fmt.Println("  snypher <interface>")
+				listInterfaces()
+				os.Exit(1)
+			}
+
+			if !interfaceExists(iface) {
+				fmt.Printf("❌ Interface '%s' does not exist.\n", iface)
+				listInterfaces()
 				os.Exit(1)
 			}
 
@@ -43,11 +54,39 @@ func main() {
 		},
 	}
 
-	rootCmd.Flags().StringVarP(&iface, "NetMon", "n", "", "network interface to monitor")
+	rootCmd.Flags().StringVarP(&iface, "run", "r", "", "network interface to monitor")
 	rootCmd.Flags().BoolVarP(&newWin, "new", "w", false, "open in new terminal window")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+}
+
+func listInterfaces() {
+	ifaces, err := pcap.FindAllDevs()
+	if err != nil {
+		fmt.Println("Error listing interfaces:", err)
+		return
+	}
+
+	fmt.Println("\nAvailable Network Interfaces:")
+	for _, iface := range ifaces {
+		fmt.Printf(" - %s\n", iface.Name)
+	}
+	fmt.Println()
+}
+
+func interfaceExists(name string) bool {
+	ifaces, err := pcap.FindAllDevs()
+	if err != nil {
+		return false
+	}
+	for _, i := range ifaces {
+		if i.Name == name {
+			return true
+		}
+	}
+	return false
 }
